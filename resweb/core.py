@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import Flask, g, redirect, request, Response
+from flask import Flask, g, redirect, request, Response, url_for
 from pyres import ResQ, failure
 
 from resweb.views import (
@@ -91,7 +91,7 @@ def failed_retry():
     job = b64decode(failed_job)
     decoded = ResQ.decode(job)
     failure.retry(g.pyres, decoded['queue'], job)
-    return redirect('/failed/')
+    return redirect(url_for('.failed'))
 
 @app.route('/failed/delete/', methods=["POST"])
 @requires_auth
@@ -99,15 +99,15 @@ def failed_delete():
     failed_job = request.form['failed_job']
     job = b64decode(failed_job)
     failure.delete(g.pyres, job)
-    return redirect('/failed/')
+    return redirect(url_for('.failed'))
 
 @app.route('/failed/delete_all/')
 @requires_auth
 def delete_all_failed():
-    #move resque:failed to resque:failed-staging
+    # move resque:failed to resque:failed-staging
     g.pyres.redis.rename('resque:failed', 'resque:failed-staging')
     g.pyres.redis.delete('resque:failed-staging')
-    return redirect('/failed/')
+    return redirect(url_for('.failed'))
 
 
 @app.route('/failed/retry_all')
@@ -117,7 +117,7 @@ def retry_failed(number=5000):
     for f in failures:
         j = b64decode(f['redis_value'])
         failure.retry(g.pyres, f['queue'], j)
-    return redirect('/failed/')
+    return redirect(url_for('.failed'))
 
 @app.route('/workers/<worker_id>/')
 @requires_auth
@@ -132,7 +132,7 @@ def workers():
 @app.route('/stats/')
 @requires_auth
 def stats_resque():
-    return redirect('/stats/resque/')
+    return redirect(url_for('.stats', key="resque"))
 
 @app.route('/stats/<key>/')
 @requires_auth
