@@ -9,8 +9,7 @@ import datetime
 
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
 class ResWeb(pystache.TemplateSpec):
-    _template_path = TEMPLATE_PATH
-    renderer = pystache.Renderer(search_dirs=_template_path)
+    renderer = pystache.Renderer(search_dirs=TEMPLATE_PATH)
 
     def __init__(self, host):
         self.resq = host
@@ -95,7 +94,7 @@ class Overview(ResWeb):
         return not self._queue
 
     def fail_count(self):
-        #from pyres.failure import Failure
+        # from pyres.failure import Failure
         return str(failure.count(self.resq))
 
     def workers(self):
